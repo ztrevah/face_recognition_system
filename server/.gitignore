@@ -1,0 +1,12 @@
+.env
+
+test.py
+
+/*/__pycache__
+
+/*/migrations/*
+
+/cam_tracker/faces
+
+/cam_tracker/static/cam_tracker
+
