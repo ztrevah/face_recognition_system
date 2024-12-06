@@ -10,4 +10,5 @@ urlpatterns = [
     path('cam/<str:cam_id>/delete/',cam_views.delete_member, name='deleteMember'),
     path('auth/signup/',auth_views.signup, name='signup'),
     path('auth/signin/',auth_views.signin, name='signin'),
+    path('test/',cam_views.test_image, name='test'),
 ]

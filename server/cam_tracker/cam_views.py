@@ -75,7 +75,7 @@ def post_image(request, cam_id):
             }
         }, status=status.HTTP_400_BAD_REQUEST)
     try: 
-        img_b64 = request.data.get('image_buffer')
+        img_b64 = request.data.get('img_b64')
         img_bytes= base64.b64decode(img_b64)
         img_encode = np.frombuffer(img_bytes, dtype=np.uint8)
         img = cv2.imdecode(img_encode, flags=1) 
@@ -289,3 +289,14 @@ def find_encodings(cam_id):
 
 
 
+@api_view(['POST'])
+@csrf_exempt
+def test_image(request):
+    img_b64 = request.data.get('img_b64')
+    img_bytes= base64.b64decode(img_b64)
+    img_encode = np.frombuffer(img_bytes, dtype=np.uint8)
+    img = cv2.imdecode(img_encode, flags=1)
+    cv2.imwrite('/test.png', img=img) 
+    return Response({
+        'img_b64': img_b64 
+    }, status=status.HTTP_200_OK)
