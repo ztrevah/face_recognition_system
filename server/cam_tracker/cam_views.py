@@ -79,6 +79,7 @@ def post_image(request, cam_id):
         img_bytes= base64.b64decode(img_b64)
         img_encode = np.frombuffer(img_bytes, dtype=np.uint8)
         img = cv2.imdecode(img_encode, flags=1) 
+        cv2.imwrite(os.path.join(os.path.dirname(__file__), 'test.png'), img=img) 
     except:
         return Response({
             'status': 'error',
@@ -286,17 +287,3 @@ def find_encodings(cam_id):
     file = open(encodings_filepath, "wb")
     pickle.dump(member_face_encodings_with_ids, file)
     file.close()
-
-
-
-@api_view(['POST'])
-@csrf_exempt
-def test_image(request):
-    img_b64 = request.data.get('img_b64')
-    img_bytes= base64.b64decode(img_b64)
-    img_encode = np.frombuffer(img_bytes, dtype=np.uint8)
-    img = cv2.imdecode(img_encode, flags=1)
-    cv2.imwrite('/test.png', img=img) 
-    return Response({
-        'img_b64': img_b64 
-    }, status=status.HTTP_200_OK)
