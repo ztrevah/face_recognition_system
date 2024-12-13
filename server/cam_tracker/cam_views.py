@@ -1,6 +1,7 @@
 import base64, os, pickle, cv2, face_recognition, shutil
 from datetime import datetime
 import numpy as np
+import bcrypt
 
 from cvzone.FaceDetectionModule import FaceDetector
 
@@ -287,3 +288,14 @@ def find_encodings(cam_id):
     file = open(encodings_filepath, "wb")
     pickle.dump(member_face_encodings_with_ids, file)
     file.close()
+
+def checkCameraToken(cam_id, auth_token):
+    try:
+        camera = Camera.objects.get(id=cam_id)
+        if not bcrypt.checkpw(bytes(auth_token, 'utf-8'), bytes(camera.auth_token, 'utf-8')):
+            return False
+        
+        return True
+    except Exception as e:
+        print(e)
+        return False
