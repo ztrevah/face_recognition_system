@@ -1,15 +1,16 @@
 from rest_framework import serializers
 from .models import User, Camera, Subscription, Member, Attendance
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        exclude = ['password']
 
 class CameraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Camera
-        fields = '__all__'
+        exclude = ['auth_token']
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:

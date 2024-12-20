@@ -32,6 +32,10 @@ class Subscription(models.Model):
     user = ForeignKey(to=User, to_field='id', db_column='user_id', on_delete=models.CASCADE)
     cam = ForeignKey(to=Camera, to_field='id', db_column='cam_id', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints =[
+            models.UniqueConstraint(fields=['user_id', 'cam_id'], name='unique_subscription')
+        ] 
     def __str__(self):
         return self.id
 
