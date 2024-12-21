@@ -1,14 +1,16 @@
 import SignInForm from "@/components/auth/signin-form";
+import { Toaster } from "@/components/ui/toaster";
+import { Camera } from "lucide-react";
 
 const SignInPage = (props) => {
     return (
-        <div className="w-full h-full flex flex-col items-center m-auto">
+        <div className="w-full min-h-screen flex flex-col items-center justify-center">
             <header className="flex items-center text-3xl text-indigo-600 font-semibold mb-6">
                 <Camera className="h-8 w-8 mr-2" />
                 Traskesp
             </header>
-            <main className="w-full">
-                <div className="w-full flex flex-col items-center">
+            <main className="">
+                <div className="flex flex-col items-center">
                     <div className="text-xl font-medium mb-4">
                         Let's get started
                     </div>
@@ -18,6 +20,7 @@ const SignInPage = (props) => {
                     <SignInForm />
                 </div>
             </main>
+            <Toaster />
         </div>
     )
 }

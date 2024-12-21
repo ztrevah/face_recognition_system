@@ -21,8 +21,9 @@ const formSchema = z.object({
 const SignInForm = () => {
     const { signin } = useAuthContext()
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState('');
     const navigate = useNavigate()
-    const searchParams = useSearchParams()
+    const [searchParams, setSearchParams] = useSearchParams()
     
     const redirectUrl = searchParams.get('redirect_url') || '/'
     const form  = useForm({
@@ -36,24 +37,24 @@ const SignInForm = () => {
         try {
             setIsLoading(true)
             const res = await signin(values)
-            console.log(res)
+            setError("")
             form.reset()
             navigate(redirectUrl)
         } catch(err) {
-            console.log(err)
+            setError(err.message)
         } finally {
             setIsLoading(false)
         }
     }
     return (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-            <div className='space-y-8 px-6'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4'>
+            <div className='space-y-4 px-6'>
               <FormField
                 control={form.control}
                 name='username'
                 render={({ field }) => (
-                  <FormItem className="w-[400px]">
+                  <FormItem className="w-[300px]">
                     <FormLabel className='text-xs font-bold uppercase'>
                       Username
                     </FormLabel>
@@ -73,7 +74,7 @@ const SignInForm = () => {
                 control={form.control}
                 name='password'
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="w-[300px]">
                     <FormLabel className='text-xs font-bold uppercase'>
                         Password
                     </FormLabel>
@@ -91,12 +92,17 @@ const SignInForm = () => {
                 )}
               />
             </div>
+            {error ? (
+              <div className="text-red-600 text-sm font-bold text-center">
+                {error}
+              </div>
+            ) : ""}
             <div className="w-full text-center">
               <Button disabled={isLoading} variant='default'>
                   Sign in
               </Button>
               <div className='text-md font-medium mt-4'>
-                Don&apos;t have an account? <Link href="/sign-up" className='text-rose-500'>Sign Up</Link>
+                Don&apos;t have an account? <Link to="/sign-up" className='text-rose-500'>Sign up</Link>
               </div>
             </div>
           </form>

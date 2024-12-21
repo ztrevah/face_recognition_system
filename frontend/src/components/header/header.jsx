@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -9,25 +9,31 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Library, LogOut, MessageSquareWarning, Settings, UserCircle } from "lucide-react";
+import { useAuthContext } from "@/context/auth-context";
 
 const HeaderNavigationItem = (props) => {
   const { name, link } = props
 
-  const router = useRouter();
+  const navigate = useNavigate()
   return (
-      <div className="text-zinc-600 text-xl hover:text-black mr-6" onClick={() => router.push(link)}>
+      <div className="text-zinc-600 text-xl hover:text-black mr-6" onClick={() => navigate(link)}>
           {name}
       </div>
   )
 }
+
+
 const Header = () => {
-  const router = useRouter();
+  const { currentUser, logout } = useAuthContext()
+  const navigate = useNavigate()
+
+
   return (
     <header className="sticky top-0 w-full h-[100px] px-10 py-5 shadow flex items-center justify-between bg-white">
       <div className="flex items-center flex-1 text-indigo-600 font-semibold text-3xl cursor-pointer" onClick={() => router.push("/")}>
-        <Image
-          src="/esp32cam.png"
-          alt="Logo"
+        <img
+          src="/images/esp32cam.jpg"
+          alt=""
           width={50}
           height={50}
           className="mr-3"
@@ -47,27 +53,41 @@ const Header = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom" align="end">
             <DropdownMenuLabel className="text-lg">
-              Chien Nguyen
+              {currentUser?.username || 'Unknown'}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Library />
-                Profile
+                <div className="flex items-center gap-2 text-md">
+                  <Library className="h-4 w-4" />
+                  Profile
+                </div>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Settings />
-                Settings
+                <div className="flex items-center gap-2 text-md">
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </div>
+                
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <MessageSquareWarning />
-                Feedbacks
+                <div className="flex items-center gap-2 text-md">
+                  <MessageSquareWarning className="h-4 w-4" />
+                  Feedbacks
+                </div>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <LogOut />
-              Log out
+              <div
+                onClick={async () => {
+                  await logout()
+                }}
+                className="flex items-center gap-2 text-md"
+              >
+                <LogOut className="h-4 w-4" />
+                Log out
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

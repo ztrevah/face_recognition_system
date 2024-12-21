@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL
+const BACKEND_URL = import.meta.env.VITE_PUBLIC_API_URL
 
 export default {
     SIGNUP: `${BACKEND_URL}/auth/signup/`,

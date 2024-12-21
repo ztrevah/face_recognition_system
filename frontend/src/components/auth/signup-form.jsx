@@ -1,12 +1,16 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { Link, useNavigate } from 'react-router-dom'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useAuthContext } from '../../context/auth-context'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
+
 import { Input } from '../ui/input'
-import { useState } from 'react'
 import { Button } from '../ui/button'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
+
+import { useAuthContext } from '../../context/auth-context'
+import { useToast } from '@/hooks/use-toast'
+import { EpSuccessFilled } from '../icons/Icon'
 
 
 const formSchema = z.object({
@@ -25,10 +29,10 @@ const formSchema = z.object({
 const SignUpForm = () => {
     const { signup } = useAuthContext()
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState("")
     const navigate = useNavigate()
-    const searchParams = useSearchParams()
-    
-    const redirectUrl = searchParams.get('redirect_url') || '/'
+    const { toast } = useToast();
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -42,23 +46,36 @@ const SignUpForm = () => {
         try {
             setIsLoading(true)
             await signup({ username, password })
+            setError("")
             form.reset()
-            navigate(redirectUrl)
+            navigate('/sign-in')
+            toast({
+              title: (
+                <div className='flex items-center'>
+                  <EpSuccessFilled className="h-4 w-4 mr-2 [&>path]:fill-green-500" />
+                  Successfully sign up
+                </div>
+              ),
+              description: 'Now you can sign in to our app.',
+              variant: 'successful',
+              className: ''
+            })
         } catch(err) {
-            console.log(err)
+          setError(err.message)
+          console.log(err)
         } finally {
             setIsLoading(false)
         }
     }
     return (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-            <div className='space-y-8 px-6'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+            <div className='space-y-4 px-6'>
               <FormField
                 control={form.control}
                 name='username'
                 render={({ field }) => (
-                  <FormItem className="w-[400px]">
+                  <FormItem className="w-[300px]">
                     <FormLabel className='text-xs font-bold uppercase'>
                       Username
                     </FormLabel>
@@ -117,12 +134,17 @@ const SignUpForm = () => {
                 )}
               />
             </div>
+            {error ? (
+              <div className="text-red-600 text-sm font-bold text-center">
+                {error}
+              </div>
+            ) : ""}
             <div className="w-full text-center">
               <Button disabled={isLoading} variant='default'>
                   Sign up
               </Button>
               <div className='text-md font-medium mt-4'>
-                Already have an account? <Link href="/sign-in" className='text-rose-500'>Sign in</Link>
+                Already have an account? <Link to="/sign-in" className='text-rose-500'>Sign in</Link>
               </div>
             </div>
           </form>

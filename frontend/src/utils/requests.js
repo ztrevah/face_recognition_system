@@ -8,13 +8,6 @@ const request = axios.create({
   },
 })
 
-request.interceptors.request.use(
-  (req) => {
-    console.log(req)
-    return req
-  }
-)
-
 // Add a response interceptor
 request.interceptors.response.use(
   (response) => {

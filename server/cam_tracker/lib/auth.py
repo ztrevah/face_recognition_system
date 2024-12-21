@@ -101,8 +101,8 @@ def set_jwt_cookie(user: User, response: Response):
     return response
 
 def delete_jwt_cookie(response: Response):
-    response.delete_cookie('access_token')
-    response.delete_cookie('refresh_token')
+    response.delete_cookie(key='access_token', samesite='none')
+    response.delete_cookie(key='refresh_token', samesite='none')
     return response
 
 def verify(req: Request, res: Response):

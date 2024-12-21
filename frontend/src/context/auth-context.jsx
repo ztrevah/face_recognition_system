@@ -1,28 +1,31 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import authServices from "@/services/auth";
 
-export const AuthContext = createContext<any>(undefined)
+export const AuthContext = createContext()
 
 export const AuthContextProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
     
     const signin = async (data) => {
         try {
             const res = await authServices.signin(data)
             setCurrentUser(res.data)
-            return res.data
+            // return res.data
         } catch(err) {
-            throw err
+            console.log(err)
+            throw new Error(err.response.data.error.message || 'There has been an error.')
         }
     }
 
     const signup = async(data) => {
         try {
             const res = await authServices.signup(data)
-            setCurrentUser(res.data)
-            return res.data
+            // setCurrentUser(res.data)
+            // return res.data
         } catch(err) {
-            throw err
+            console.log(err)
+            throw new Error(err.response.data.error.message || 'There has been an error.')
         }
     }
 
@@ -37,11 +40,14 @@ export const AuthContextProvider = ({ children }) => {
 
     const getCurrentUser = async () => {
         try {
+            setIsLoading(true)
             const res = await authServices.verify()
             setCurrentUser(res.data)
             return res.data
         } catch(err) {
             console.log(err)
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -50,7 +56,7 @@ export const AuthContextProvider = ({ children }) => {
     }, [])
 
     return (
-        <AuthContext.Provider value={{currentUser, signin, signup, getCurrentUser, logout}}>
+        <AuthContext.Provider value={{currentUser, signin, signup, getCurrentUser, logout, isLoading}}>
             {children}
         </AuthContext.Provider>
     )
