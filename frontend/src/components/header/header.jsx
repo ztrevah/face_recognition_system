@@ -1,36 +1,47 @@
 import { useNavigate } from "react-router-dom";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuGroup, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Library, LogOut, MessageSquareWarning, Settings, UserCircle } from "lucide-react";
-import { useAuthContext } from "@/context/auth-context";
+import {
+  ChevronDown,
+  Library,
+  LogOut,
+  MessageSquareWarning,
+  Settings,
+  UserCircle,
+} from "lucide-react";
+import { useAuth } from "@/context/auth-context";
 
 const HeaderNavigationItem = (props) => {
-  const { name, link } = props
+  const { name, link } = props;
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   return (
-      <div className="text-zinc-600 text-xl hover:text-black mr-6" onClick={() => navigate(link)}>
-          {name}
-      </div>
-  )
-}
-
+    <div
+      className="text-zinc-600 text-xl hover:text-black mr-6"
+      onClick={() => navigate(link)}
+    >
+      {name}
+    </div>
+  );
+};
 
 const Header = () => {
-  const { currentUser, logout } = useAuthContext()
-  const navigate = useNavigate()
-
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 w-full h-[100px] px-10 py-5 shadow flex items-center justify-between bg-white">
-      <div className="flex items-center flex-1 text-indigo-600 font-semibold text-3xl cursor-pointer" onClick={() => router.push("/")}>
+      <div
+        className="flex items-center flex-1 text-indigo-600 font-semibold text-3xl cursor-pointer"
+        onClick={() => router.push("/")}
+      >
         <img
           src="/images/esp32cam.jpg"
           alt=""
@@ -53,7 +64,7 @@ const Header = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom" align="end">
             <DropdownMenuLabel className="text-lg">
-              {currentUser?.username || 'Unknown'}
+              {currentUser?.username || "Unknown"}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -68,7 +79,6 @@ const Header = () => {
                   <Settings className="h-4 w-4" />
                   Settings
                 </div>
-                
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <div className="flex items-center gap-2 text-md">
@@ -81,7 +91,7 @@ const Header = () => {
             <DropdownMenuItem>
               <div
                 onClick={async () => {
-                  await logout()
+                  await logout();
                 }}
                 className="flex items-center gap-2 text-md"
               >

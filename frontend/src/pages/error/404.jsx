@@ -1,9 +1,5 @@
 const Error404Page = (props) => {
-    return (
-        <div>
-            404 Not found
-        </div>
-    )
-}
+  return <div>404 Not found</div>;
+};
 
-export default Error404Page
+export default Error404Page;
