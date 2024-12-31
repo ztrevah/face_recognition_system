@@ -8,6 +8,8 @@ from cam_tracker.models import Subscription, Camera
 from cam_tracker.serializers import SubscriptionSerializer
 from cam_tracker.lib import auth
 
+from asgiref.sync import sync_to_async
+
 
 def subscribe_camera(req):
     user = auth.current_user(req)
@@ -120,6 +122,7 @@ def get_subscriptions(req):
 
 @api_view(['GET', 'POST', 'DELETE'])
 @csrf_exempt
+@sync_to_async
 def subscription_view(req):
     if req.method == 'GET':
         return get_subscriptions(req)

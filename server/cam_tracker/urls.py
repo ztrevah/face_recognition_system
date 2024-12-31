@@ -5,7 +5,6 @@ from cam_tracker.views import subscribe_views, auth_views, cam_views
 
 urlpatterns = [
     path('cameras/', cam_views.camera_views, name='cameraView'),
-    path('cameras/<str:cam_id>/images',cam_views.post_image, name='postImage'),
     path('cameras/<str:cam_id>/members/',cam_views.camera_member_views, name='cameraMembersView'),
     path('auth/signup/',auth_views.signup, name='signup'),
     path('auth/signin/',auth_views.signin, name='signin'),

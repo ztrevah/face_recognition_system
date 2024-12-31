@@ -7,6 +7,8 @@ from cam_tracker.models import User
 from cam_tracker.serializers import UserSerializer
 from cam_tracker.lib import auth
 
+from asgiref.sync import sync_to_async
+
 @api_view(['POST'])  
 @csrf_exempt
 def signup(req):
