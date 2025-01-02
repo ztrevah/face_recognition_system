@@ -17,6 +17,12 @@ class User(models.Model):
     
     def __str__(self):
         return self.username
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['username'])
+        ]
+
 
 class Camera(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, name='id')
@@ -33,9 +39,12 @@ class Subscription(models.Model):
     cam = ForeignKey(to=Camera, to_field='id', db_column='cam_id', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
-        constraints =[
+        constraints = [
             models.UniqueConstraint(fields=['user_id', 'cam_id'], name='unique_subscription')
         ] 
+        indexes = [
+            models.Index(fields=['user_id'])
+        ]
     def __str__(self):
         return self.id
 
@@ -49,12 +58,25 @@ class Member(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f'{self.id} - {self.name}'
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['cam_id'])
+        ]
 
 class Attendance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, name='id')
     member = ForeignKey(to=Member, to_field="id", db_column="member_id", on_delete=models.CASCADE)
+    cam = ForeignKey(to=Camera, to_field="id", db_column="cam_id", on_delete=models.CASCADE)
     time = models.DateTimeField(auto_now_add=True)
     
+    class Meta:
+        indexes = [
+            models.Index(fields=["cam_id"]),
+            models.Index(fields=["time"])
+        ]
+        ordering = ['-time']
+
     def __str__(self):
         return f'{self.member_id} - {self.time}'
 
@@ -190,3 +212,8 @@ class FaceEncodings(models.Model):
     dimen126 = models.FloatField()
     dimen127 = models.FloatField()
     dimen128 = models.FloatField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['member_id']),
+        ]

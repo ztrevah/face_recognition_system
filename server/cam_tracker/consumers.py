@@ -1,105 +1,101 @@
-import json, base64, numpy as np, cv2, face_recognition, os
-from channels.generic.websocket import WebsocketConsumer
-from cam_tracker.models import Camera, Attendance
-from cvzone.FaceDetectionModule import FaceDetector
+import json, base64, numpy as np, cv2, face_recognition, os, time, threading
 from datetime import datetime
-import time
-from cam_tracker.lib.cam import getMembersEncodingsWithIdsFromDb
-import threading
+
+from cvzone.FaceDetectionModule import FaceDetector
+
+from channels.generic.websocket import WebsocketConsumer
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 from cam_tracker.lib.auth import checkpassword
+from cam_tracker.lib.cam import image_analyze 
+from cam_tracker.models import Camera, Attendance
+from cam_tracker.serializers import AttendanceSerializer, MemberSerializer
 
 
 detector = FaceDetector(minDetectionCon=0.5, modelSelection=0)
 
-
 class ImageConsumer(WebsocketConsumer): 
     cam = None
     cam_id = ''
+    is_sender = False
     def connect(self):
         self.cam_id = self.scope['url_route']['kwargs']['cam_id']
-        self.room_group_name = f'receiver_{self.cam_id}'
+        self.room_group_name = f'streaming_{self.cam_id}'
         try:
             self.cam = Camera.objects.get(id=self.cam_id)
             self.accept()
-            self.channel_layer.group
+            async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
         except Exception as e:
             print(e)
             pass
 
     def receive(self, text_data=None):
-        message_dict = json.loads(text_data)
-        message_type = message_dict.get('type', None)
-        if message_type == 'image':
-            try:
+        time_sent = datetime.now().astimezone()
+        try:
+            message_dict = json.loads(text_data)
+            message_type = message_dict.get('type', None)
+            auth_token = message_dict.get('auth_token')
+            if message_type == 'image_send':
+                if self.is_sender == False:
+                    if not checkpassword(auth_token, self.cam.auth_token):
+                        self.send('Unauthorized')
+                        return
+                    self.is_sender = True
+
                 start = time.time()
-
-                t = threading.Thread(target=image_analyze, args=(text_data, self.cam_id))
+                t = threading.Thread(target=image_analyze, args=(text_data, self.cam_id, time_sent))
+                async_to_sync(self.channel_layer.group_send)(self.room_group_name, {
+                    'type': 'image_send',
+                    'img_b64': message_dict.get('img_b64', None)
+                })
                 t.start()
-
                 stop = time.time()
                 print(stop-start)
-                self.send("all good")
-                # t.join()
-            except Exception as e:
-                self.send("not good")
-                print(self.cam_id)
 
-        # elif message_type == "init": 
-        #     auth_token = message_dict.get('auth_token', None)
-        #     if not checkpassword(auth_token, self.cam.auth_token):
-        #         self.send("Wrong password")
-        #         return
-        #     self.room_group_name = f'sender_{self.cam_id}'
-            
-        # else:
-        #     self.send("Invalid")
-
+            self.send('Invalid type')
+        except Exception as e:
+            print(e)
     
-def image_analyze(text_data, cam_id):
-    try: 
-        img_b64 = json.loads(text_data).get('img_b64', None)
-        img_bytes= base64.b64decode(img_b64)
-        img_encode = np.frombuffer(img_bytes, dtype=np.uint8)
-        img = cv2.imdecode(img_encode, flags=1)
+    def disconnect(self, code):
+        try:
+            async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+        except Exception as e:
+            print(e)
 
-        memberIds, memberFaceEncodings = getMembersEncodingsWithIdsFromDb(cam_id)
-    
-        img, bboxs = detector.findFaces(img, draw=False)
-        response_data = {
-            'status': 'ok',
-            'data': {
-                'faces': []
-            }
-        }
-        face_frames = []
-        for bbox in bboxs:
-            x, y, w, h = bbox['bbox']
-            face_frames.append((y, x + w, y + h, x))
+    def image_send(self, event):
+        if self.is_sender:
+            return
+        try:
+            self.send(event['img_b64'])
+        except Exception as e:
+            print(e)
+ 
 
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        face_frame_encodings = face_recognition.face_encodings(img, face_frames)
+class LogConsumer(WebsocketConsumer):
+    cam = None
+    cam_id = ''
+    def connect(self):
+        self.cam_id = self.scope['url_route']['kwargs']['cam_id']
+        self.room_group_name = f'logs_{self.cam_id}'
+        try:
+            self.cam = Camera.objects.get(id=self.cam_id)
+            self.accept()
+            async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
+        except Exception as e:
+            print(e)
+            pass
 
-        for face_frame, face_frame_encoding in zip(face_frames,face_frame_encodings):
-            y1, x2, y2, x1 = face_frame
-            face = {
-                'location': [x1,y1,x2,y2],
-                'identity': None,
-            }
-            matched = face_recognition.compare_faces(memberFaceEncodings, face_frame_encoding, tolerance=0.5)
-            face_dis = face_recognition.face_distance(memberFaceEncodings, face_frame_encoding)
-            matched_index = np.argmin(face_dis)
-            if matched[matched_index]:
-                face['identity'] = memberIds[matched_index]
-                try:
-                    attendances = Attendance.objects.filter(member__id=memberIds[matched_index]).order_by('-time')
-                    if len(attendances) == 0 or (datetime.now().astimezone() - attendances[0].time.astimezone()).total_seconds() > 15:
-                        Attendance.objects.create(member_id=memberIds[matched_index])
-                except Exception as e:
-                    raise e
+    def disconnect(self, code):
+        try:
+            async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+        except Exception as e:
+            print(e)
 
-            response_data['data']['faces'].append(face)
-
-        print(response_data)
-    except Exception as e:
-        print(e)
-        return
+    def log_receive(self,event):
+        try:
+            log = event.get('log', None)
+            if log is not None:
+                self.send(json.dumps(log))
+        except Exception as e:
+            print(e)

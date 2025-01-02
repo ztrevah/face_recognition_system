@@ -1,10 +1,9 @@
-import base64, os, pickle, cv2, face_recognition, shutil
-from datetime import datetime
+import os, cv2, face_recognition
 import numpy as np
 
 from cvzone.FaceDetectionModule import FaceDetector
 
-from cam_tracker.models import Member, Camera, FaceEncodings
+from cam_tracker.models import Member, Camera, FaceEncodings, Attendance
 from cam_tracker.serializers import CameraSerializer, MemberSerializer
 from cam_tracker.lib import auth
 
@@ -247,3 +246,40 @@ def camera_member_views(request, cam_id):
         return add_member(request, cam_id)
     
     return delete_member(request, cam_id) 
+
+
+@api_view(['GET'])
+@csrf_exempt
+def get_attendances(req, cam_id = None):
+    if cam_id is None:
+        return Response({
+            'error': {
+                'message': 'Missing cam_id'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        camera = Camera.objects.get(id=cam_id)
+        attendances = Attendance.objects.filter(cam_id=cam_id)
+        response_data = []
+        for att in attendances:
+            response_data.append({
+                'time': att.time.__str__(),
+                'cam_id': cam_id,
+                'member': {
+                    'id': att.member.id.__str__(),
+                    'name': att.member.name,
+                    'gender': att.member.gender,
+                    'dob': att.member.dob.__str__()
+                }
+            })
+        return Response(
+            response_data,
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        print(e)
+        return Response({
+            'error': {
+                'message': 'Camera not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
