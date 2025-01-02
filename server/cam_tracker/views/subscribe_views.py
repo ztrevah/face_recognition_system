@@ -112,8 +112,13 @@ def get_subscriptions(req):
         return response
     
     subscriptions = Subscription.objects.filter(user_id=user.id)
+    response_data = []
+    for subscription in subscriptions:
+        response_data.append({
+            'cam_id': subscription.cam_id
+        })
     response = Response(
-        SubscriptionSerializer(subscriptions, many=True).data,
+        response_data,
         status=status.HTTP_200_OK
     )
     response = auth.set_jwt_cookie(user, response)
@@ -122,7 +127,6 @@ def get_subscriptions(req):
 
 @api_view(['GET', 'POST', 'DELETE'])
 @csrf_exempt
-@sync_to_async
 def subscription_view(req):
     if req.method == 'GET':
         return get_subscriptions(req)
