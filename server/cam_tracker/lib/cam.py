@@ -42,7 +42,12 @@ def getMembersEncodingsWithIdsFromDb(cam_id):
     
 def image_analyze(text_data, cam_id, time_sent):
     try: 
-        img_b64 = json.loads(text_data).get('img_b64', None)
+        channel_layer = get_channel_layer()
+        img_b64 = json.loads(text_data).get('img_b64')
+        async_to_sync(channel_layer.group_send)(f'streaming_{cam_id}', {
+            'type': 'image_send',
+            'img_b64': img_b64
+        })
         img_bytes= base64.b64decode(img_b64)
         img_encode = np.frombuffer(img_bytes, dtype=np.uint8)
         img = cv2.imdecode(img_encode, flags=1)
@@ -70,7 +75,7 @@ def image_analyze(text_data, cam_id, time_sent):
                 'location': [x1,y1,x2,y2],
                 'identity': None,
             }
-            matched = face_recognition.compare_faces(memberFaceEncodings, face_frame_encoding, tolerance=0.5)
+            matched = face_recognition.compare_faces(memberFaceEncodings, face_frame_encoding)
             face_dis = face_recognition.face_distance(memberFaceEncodings, face_frame_encoding)
             matched_index = np.argmin(face_dis)
             if matched[matched_index]:
@@ -79,8 +84,8 @@ def image_analyze(text_data, cam_id, time_sent):
                     # attendances = Attendance.objects.filter(member__id=memberIds[matched_index]).order_by('-time')
                     # if len(attendances) == 0 or (datetime.now().astimezone() - attendances[0].time.astimezone()).total_seconds() > 15:
                     #     Attendance.objects.create(member_id=memberIds[matched_index])
-                    log = Attendance.objects.create(member_id=memberIds[matched_index], cam_id=cam_id, time=time_sent)
-                    channel_layer = get_channel_layer()
+                    log = Attendance.objects.create(member_id=memberIds[matched_index], cam_id=cam_id)
+                    
                     async_to_sync(channel_layer.group_send)(f'logs_{cam_id}', {
                         'type': 'log_receive',
                         'log': {

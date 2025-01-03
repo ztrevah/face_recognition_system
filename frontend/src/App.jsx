@@ -61,7 +61,15 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "/camera/:cam_id",
+        path: "/camera/:cam_id/general",
+        element: <CameraIdPage />,
+      },
+      {
+        path: "/camera/:cam_id/members",
+        element: <CameraIdPage />,
+      },
+      {
+        path: "/camera/:cam_id/logs",
         element: <CameraIdPage />,
       },
     ],

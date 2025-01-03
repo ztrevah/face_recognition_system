@@ -7,6 +7,7 @@ export default {
   LOGOUT: `${API_URL}/auth/logout/`,
   VERIFY: `${API_URL}/auth/verify/`,
   CAMERA: `${API_URL}/cameras/`,
+  CAMERA_INFO: `${API_URL}/cameras/:cam_id/`,
   CAMERA_MEMBER: `${API_URL}/cameras/:cam_id/members/`,
   CAMERA_LOGS: `${API_URL}/cameras/:cam_id/attendances/`,
   CAMERA_STREAMING: `${WS_URL}/streaming/:cam_id/`,

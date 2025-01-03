@@ -13,16 +13,21 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 import cam_tracker.routing
+from channels.security.websocket import AllowedHostsOriginValidator, OriginValidator
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 
 application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),
-        "websocket": AuthMiddlewareStack(
-            URLRouter(
-                cam_tracker.routing.websocket_urlpatterns
-            )
-        )
+        "websocket": OriginValidator(
+            AuthMiddlewareStack(
+                URLRouter(
+                    cam_tracker.routing.websocket_urlpatterns
+                )
+            ),
+            ["*"]
+        ) 
+        
     }
 )

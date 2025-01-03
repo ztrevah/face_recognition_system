@@ -72,15 +72,12 @@ const HomePage = (props) => {
 
   const changeSubscriptionStatus = async (camera) => {
     try {
-      setIsLoading(true);
       if (camera.subscribed)
         await subscribeService.deleteSubscription({ cam_id: camera.id });
       else await subscribeService.createSubscription({ cam_id: camera.id });
       getCameraList();
     } catch (err) {
       console.log(err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -132,7 +129,7 @@ const HomePage = (props) => {
                     {displayedCameraList.map((camera, index) => (
                       <TableRow key={index}>
                         <TableCell className="w-[100px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">
-                          <Link to={`/camera/${camera?.id}`}>
+                          <Link to={`/camera/${camera?.id}/general`}>
                             {camera?.id || ""}
                           </Link>
                         </TableCell>

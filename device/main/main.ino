@@ -29,7 +29,7 @@
 const char *ssid = "chien";
 const char *password = "hehehehe";
 
-const char* serverName = "http://192.168.172.241:8000/api/cam/80f62a2a-5345-4b66-aafa-be6de657579b/";
+const char* serverName = "http://192.168.137.241:8000/api/streaming/22b5a903-f08d-484e-8767-ea3dcc440eb7/";
 
 esp_err_t configCamera();
 void connectWiFi();
@@ -125,6 +125,7 @@ void sendImage(camera_fb_t* fb) {
     Serial.print("Response code: ");
     Serial.println(httpResponseCode);
     http.end();
+    delay(20);
   } 
   else return;
 }

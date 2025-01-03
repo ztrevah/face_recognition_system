@@ -1,5 +1,6 @@
-import os, cv2, face_recognition
+import os, cv2, face_recognition, threading, json
 import numpy as np
+from datetime import datetime
 
 from cvzone.FaceDetectionModule import FaceDetector
 
@@ -12,7 +13,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from cam_tracker.lib.cam import getMembersEncodingsWithIdsFromDb, convertEncodingsToDbRow
+from cam_tracker.lib.cam import getMembersEncodingsWithIdsFromDb, convertEncodingsToDbRow, image_analyze
 
 
 detector = FaceDetector(minDetectionCon=0.5, modelSelection=0)
@@ -281,5 +282,33 @@ def get_attendances(req, cam_id = None):
         return Response({
             'error': {
                 'message': 'Camera not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['POST'])
+@csrf_exempt
+def post_image(req, cam_id):
+    img_b64 = req.data.get('img_b64', None)
+    if img_b64 is None:
+        return Response({}, 400)
+    t = threading.Thread(target=image_analyze, args=(json.dumps({"img_b64": img_b64}), cam_id, datetime.now().astimezone()))
+    t.start()
+    return Response({}, 200)
+
+@api_view(['GET'])
+@csrf_exempt
+def camera_info_views(request, cam_id = None):
+    try:
+        camera = Camera.objects.get(id=cam_id)
+        return Response({
+            "id": camera.id,
+            "name": camera.name,
+            "location": camera.location
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            "error": {
+                "message": "Camera not found"
             }
         }, status=status.HTTP_404_NOT_FOUND)
